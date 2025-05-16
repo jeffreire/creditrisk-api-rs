@@ -1,11 +1,11 @@
-mod routes;
 mod models;
+mod routes;
 
-use axum::{Router, body::Body};
-use tokio::sync::Mutex;
-use std::{net::SocketAddr, sync::Arc};
-use tower_http::trace::TraceLayer;
 use crate::models::logistic_regression::LogisticRegression;
+use axum::{Router, body::Body};
+use std::{net::SocketAddr, sync::Arc};
+use tokio::sync::Mutex;
+use tower_http::trace::TraceLayer;
 
 // use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -14,12 +14,12 @@ async fn main() {
     // tracing_subscriber::registry()
     //     .with(tracing_subscriber::fmt::layer())
     //     .init();
-    
+
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
 
-    let model = Arc::new(Mutex::new(LogisticRegression::new( 3, 0.01)));
+    let model = Arc::new(Mutex::new(LogisticRegression::new(3, 0.01)));
 
     let app = Router::new()
         .merge(routes::logistic_regression_route::routes(model))
@@ -32,13 +32,17 @@ async fn main() {
                         uri = %req.uri(),
                     )
                 })
-                .on_response(|res: &axum::http::Response<Body>, latency: std::time::Duration, _span: &tracing::Span| {
-                    tracing::info!(
-                        status = %res.status(),
-                        latency = ?latency,
-                        "resposta enviada"
-                    );
-                }),
+                .on_response(
+                    |res: &axum::http::Response<Body>,
+                     latency: std::time::Duration,
+                     _span: &tracing::Span| {
+                        tracing::info!(
+                            status = %res.status(),
+                            latency = ?latency,
+                            "resposta enviada"
+                        );
+                    },
+                ),
         );
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

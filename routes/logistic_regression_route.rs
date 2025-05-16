@@ -1,21 +1,21 @@
-use std::sync::Arc;
+use crate::models::logistic_regression::LogisticRegression;
 use axum::{
-    extract::State,
-    routing::post,
     Json, Router,
+    extract::State,
     http::StatusCode,
     response::{IntoResponse, Response},
+    routing::post,
 };
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::models::logistic_regression::LogisticRegression;
 
 /// Erros que podem ocorrer nas operações da API
 #[derive(Debug, thiserror::Error)]
 pub enum ApiError {
     #[error("Número de features incompatível: esperado {expected}, recebido {received}")]
     FeatureMismatch { expected: usize, received: usize },
-    
+
     #[error("Requisição inválida: {0}")]
     InvalidRequest(String),
 
@@ -30,11 +30,10 @@ impl IntoResponse for ApiError {
             ApiError::InvalidRequest(_) => StatusCode::BAD_REQUEST,
             ApiError::ModelNotReady(_) => StatusCode::BAD_REQUEST,
         };
-        
+
         (status, self.to_string()).into_response()
     }
 }
-
 
 /// Estruturas para processamento de solicitações
 
@@ -69,41 +68,40 @@ pub struct SaveModelRequest {
     filepath: String,
 }
 
-
 /// Processa requisições de predição
 pub async fn predict(
     State(model): State<Arc<Mutex<LogisticRegression>>>,
     Json(payload): Json<PredictionRequest>,
 ) -> Result<Json<PredictionResponse>, ApiError> {
     let mut model = model.lock().await;
-    
+
     // Verificar se o modelo foi inicializado
     if !model.initialized {
         return Err(ApiError::ModelNotReady(
-            "O modelo não foi treinado ou carregado. Use /train ou /load primeiro.".to_string()
+            "O modelo não foi treinado ou carregado. Use /train ou /load primeiro.".to_string(),
         ));
     }
 
     // Validação do número de features
     if payload.features.len() != model.weights.len() {
-        return Err(ApiError::FeatureMismatch { 
-            expected: model.weights.len(), 
-            received: payload.features.len() 
+        return Err(ApiError::FeatureMismatch {
+            expected: model.weights.len(),
+            received: payload.features.len(),
         });
     }
-    
+
     // Reconfigura o modelo se solicitado
     if let Some(lr) = payload.learning_rate {
         if payload.reconfigure.unwrap_or(false) {
             *model = LogisticRegression::new(model.weights.len(), lr);
         }
     }
-    
+
     // Realiza a predição
     let raw_prediction = model.predict_raw(&payload.features);
     let prediction = model.predict(&payload.features);
-    
-    Ok(Json(PredictionResponse { 
+
+    Ok(Json(PredictionResponse {
         predicted: prediction,
         confidence: raw_prediction,
     }))
@@ -125,31 +123,34 @@ pub async fn train_model(
     Json(payload): Json<TrainingRequest>,
 ) -> Result<StatusCode, ApiError> {
     let mut model_lock = model.lock().await;
-    
+
     // Validações
     if payload.features.is_empty() || payload.targets.is_empty() {
         return Err(ApiError::InvalidRequest(
-            "Conjuntos de treinamento vazios".to_string()
+            "Conjuntos de treinamento vazios".to_string(),
         ));
     }
-    
+
     if payload.features.len() != payload.targets.len() {
-        return Err(ApiError::InvalidRequest(
-            format!("Número de amostras incompatível: {} features vs {} targets", 
-                payload.features.len(), payload.targets.len())
-        ));
+        return Err(ApiError::InvalidRequest(format!(
+            "Número de amostras incompatível: {} features vs {} targets",
+            payload.features.len(),
+            payload.targets.len()
+        )));
     }
-    
+
     // Verifica se cada amostra tem o número correto de features
     for (i, sample) in payload.features.iter().enumerate() {
         if sample.len() != model_lock.weights.len() {
-            return Err(ApiError::InvalidRequest(
-                format!("Amostra {} tem {} features, esperado {}", 
-                    i, sample.len(), model_lock.weights.len())
-            ));
+            return Err(ApiError::InvalidRequest(format!(
+                "Amostra {} tem {} features, esperado {}",
+                i,
+                sample.len(),
+                model_lock.weights.len()
+            )));
         }
     }
-    
+
     model_lock.train(&payload.features, &payload.targets, payload.epochs);
     Ok(StatusCode::OK)
 }
@@ -160,16 +161,16 @@ pub async fn save_model(
     Json(payload): Json<SaveModelRequest>,
 ) -> Result<StatusCode, ApiError> {
     let model_lock = model.lock().await;
-    
+
     // Serializa o modelo para JSON
     let serialized = serde_json::to_string(&*model_lock)
         .map_err(|e| ApiError::InvalidRequest(format!("Erro ao serializar modelo: {}", e)))?;
-    
+
     // Escreve no arquivo
     tokio::fs::write(&payload.filepath, serialized)
         .await
         .map_err(|e| ApiError::InvalidRequest(format!("Erro ao salvar arquivo: {}", e)))?;
-    
+
     Ok(StatusCode::OK)
 }
 
@@ -178,25 +179,23 @@ pub async fn load_model(
     State(model): State<Arc<Mutex<LogisticRegression>>>,
     Json(model_data): Json<LogisticRegression>,
 ) -> Result<StatusCode, ApiError> {
-
     let mut loaded_model = model_data;
-    
+
     // Garantir que o modelo esteja marcado como inicializado
     loaded_model.initialized = true;
 
     // Substitui o modelo atual
     let mut model_lock = model.lock().await;
     *model_lock = loaded_model;
-    
+
     Ok(StatusCode::OK)
 }
-
 
 /// Configura as rotas para este módulo
 pub fn routes(model: Arc<Mutex<LogisticRegression>>) -> Router {
     Router::new()
         .route("/predict", post(predict))
-		.route("/configure", post(configure_model))
+        .route("/configure", post(configure_model))
         .route("/train", post(train_model))
         .route("/save-model", post(save_model))
         .route("/load-model", post(load_model))

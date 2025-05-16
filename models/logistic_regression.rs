@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct LogisticRegression {
@@ -10,7 +10,11 @@ pub struct LogisticRegression {
 impl LogisticRegression {
     pub fn new(num_features: usize, learning_rate: f64) -> Self {
         let weights = vec![0.0; num_features];
-        LogisticRegression { weights, learning_rate, initialized: false }
+        LogisticRegression {
+            weights,
+            learning_rate,
+            initialized: false,
+        }
     }
 
     pub fn train(&mut self, x: &[Vec<f64>], y: &[f64], epochs: usize) {
@@ -39,7 +43,11 @@ impl LogisticRegression {
     }
 
     fn weighted_sum(&self, features: &[f64]) -> f64 {
-        self.weights.iter().zip(features).map(|(w, xi)| w * xi).sum()
+        self.weights
+            .iter()
+            .zip(features)
+            .map(|(w, xi)| w * xi)
+            .sum()
     }
 
     fn sigmoid(&self, z: f64) -> f64 {
