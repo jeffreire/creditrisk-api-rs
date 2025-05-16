@@ -69,12 +69,6 @@ pub struct SaveModelRequest {
     filepath: String,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct LoadModelRequest {
-    filepath: String,
-}
-
-/// Handlers para os endpoints da API
 
 /// Processa requisições de predição
 pub async fn predict(
@@ -182,16 +176,10 @@ pub async fn save_model(
 /// Carrega o modelo a partir de um arquivo
 pub async fn load_model(
     State(model): State<Arc<Mutex<LogisticRegression>>>,
-    Json(payload): Json<LoadModelRequest>,
+    Json(model_data): Json<LogisticRegression>,
 ) -> Result<StatusCode, ApiError> {
-    // Lê o arquivo
-    let file_content = tokio::fs::read(&payload.filepath)
-        .await
-        .map_err(|e| ApiError::InvalidRequest(format!("Erro ao ler arquivo: {}", e)))?;
-    
-    // Deserializa
-    let mut loaded_model: LogisticRegression = serde_json::from_slice(&file_content)
-        .map_err(|e| ApiError::InvalidRequest(format!("Erro ao deserializar modelo: {}", e)))?;
+
+    let mut loaded_model = model_data;
     
     // Garantir que o modelo esteja marcado como inicializado
     loaded_model.initialized = true;
