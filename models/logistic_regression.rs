@@ -7,6 +7,7 @@ pub struct LogisticRegression {
     #[serde(default)]
     pub initialized: bool,
 }
+
 impl LogisticRegression {
     pub fn new(num_features: usize, learning_rate: f64) -> Self {
         let weights = vec![0.0; num_features];
@@ -22,12 +23,12 @@ impl LogisticRegression {
             for (features, &target) in x.iter().zip(y.iter()) {
                 let prediction = self.sigmoid(self.weighted_sum(features));
                 let error = prediction - target;
-                for j in 0..self.weights.len() {
-                    self.weights[j] -= self.learning_rate * error * features[j];
+                for (weight, &feature) in self.weights.iter_mut().zip(features.iter()) {
+                    *weight -= self.learning_rate * error * feature;
                 }
             }
         }
-        self.initialized = true
+        self.initialized = true;
     }
 
     pub fn predict_raw(&self, features: &[f64]) -> f64 {

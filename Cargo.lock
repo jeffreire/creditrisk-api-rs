@@ -343,6 +343,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
+name = "creditrisk-api-rs"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "hyper 1.6.0",
+ "ndarray",
+ "polars",
+ "rocket",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "crossbeam-channel"
 version = "0.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2127,24 +2145,6 @@ dependencies = [
  "time",
  "tokio",
  "uncased",
-]
-
-[[package]]
-name = "rust-project"
-version = "0.1.0"
-dependencies = [
- "axum",
- "hyper 1.6.0",
- "ndarray",
- "polars",
- "rocket",
- "serde",
- "serde_json",
- "thiserror 2.0.12",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

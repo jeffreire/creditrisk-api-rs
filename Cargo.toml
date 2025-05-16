@@ -1,5 +1,5 @@
 [package]
-name = "rust-project"
+name = "creditrisk-api-rs"
 version = "0.1.0"
 edition = "2024"
 
@@ -20,3 +20,7 @@ thiserror = "2.0.12"
 [[bin]]
 name = "rust-project"
 path = "main.rs"
+
+[alias]
+check-fmt = "fmt --all -- --check"
+fix-fmt = "fmt --all"
