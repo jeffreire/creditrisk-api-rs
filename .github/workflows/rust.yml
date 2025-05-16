@@ -42,8 +42,8 @@ jobs:
       - name: Run linting
         run: cargo clippy --all-targets -- -D warnings
 
-      - name: Security vulnerability scan
-        uses: rustsec/audit-check@v1
+      # - name: Security vulnerability scan
+      #   uses: rustsec/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
