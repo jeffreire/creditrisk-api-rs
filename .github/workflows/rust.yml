@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [1.70.0]
+        # Use a Rust toolchain that supports the 2024 edition
+        rust: [stable]
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +26,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           override: true
+          profile: minimal
           components: clippy, rustfmt
 
       - name: Cache Cargo registry
@@ -39,17 +41,17 @@ jobs:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Cache Cargo build
+      - name: Cache build artifacts
         uses: actions/cache@v3
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Format check
-        run: cargo fmt -- --check
+        run: cargo fmt --all -- --check
 
       - name: Lint
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Build debug
         run: cargo build --verbose
@@ -105,5 +107,114 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USER }}/logistic-regression-api:latest .
 
       - name: Push Docker image
+        run: docker push ${{ secrets.DOCKERHUB_USER }}/logistic-regression-api:latest
+name: Rust CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Cache, build, lint and test
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Use a Rust toolchain that supports the 2024 edition
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          profile: minimal
+          components: clippy, rustfmt
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Lint
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build debug
+        run: cargo build --verbose
+
+      - name: Run unit tests
+        run: cargo test --verbose
+
+  # Release build and package
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Build release
+        run: cargo build --release --verbose
+
+      - name: Package binary
         run: |
-          docker push ${{ secrets.DOCKERHUB_USER }}/logistic-regression-api:latest
+          mkdir -p release
+          cp target/release/your_api_binary release/
+          tar czvf release/artifact.tar.gz -C release your_api_binary
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: logistic-regression-api
+          path: release/artifact.tar.gz
+
+  # Docker build and push (optional)
+  docker:
+    needs: release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USER }}/logistic-regression-api:latest .
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKERHUB_USER }}/logistic-regression-api:latest
