@@ -53,11 +53,13 @@ jobs:
       - name: Generate test coverage
         run: |
           cargo install cargo-tarpaulin --locked
-          cargo install cargo-tarpaulin --locked
           cargo tarpaulin \
+            --workspace \
+            --packages creditrisk-api-rs \
             --out Xml \
             --output-dir ./coverage \
-            --exclude-files polars-arrow/*
+            --ignore-tests \
+            --ignore-panics
           
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
