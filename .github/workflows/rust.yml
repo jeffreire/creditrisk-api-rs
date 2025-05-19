@@ -53,14 +53,12 @@ jobs:
       - name: Generate test coverage
         run: |
           cargo install cargo-tarpaulin --locked
+          cargo install cargo-tarpaulin --locked
           cargo tarpaulin \
-            --workspace \
             --out Xml \
             --output-dir ./coverage \
-            --exclude polars-arrow \
-            --ignore-tests \
+            --exclude-files polars-arrow/*
           
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
