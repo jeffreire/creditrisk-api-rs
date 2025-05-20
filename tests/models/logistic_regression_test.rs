@@ -13,7 +13,7 @@ mod tests {
         assert_eq!(model.weights, vec![0.0, 0.0, 0.0]);
         assert_eq!(model.bias, 0.0);
         assert_eq!(model.learning_rate, 0.01);
-        assert_eq!(model.initialized, false);
+        assert!(!model.initialized);
     }
 
     #[test]
@@ -70,15 +70,11 @@ mod tests {
         ];
         let y = vec![0.0, 1.0, 1.0, 0.0];
 
-        // Note: XOR não é linearmente separável, então um modelo de regressão
-        // logística simples não conseguirá aprender perfeitamente
-        // Este teste é para garantir que o treinamento executa sem erros
         let mut model = LogisticRegression::new(2, 0.1);
         model.train(&x, &y, 100);
 
         assert!(model.initialized);
 
-        // Verificamos se pelo menos o modelo melhorou em relação à inicialização aleatória
         let predictions = x
             .iter()
             .map(|features| model.predict_raw(features))
