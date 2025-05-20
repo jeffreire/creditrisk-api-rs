@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: creditrisk-api
+    ports:
+      - "3000:3000"
+    environment:
+      - RUST_LOG=info
+      - RUST_BACKTRACE=1
+    volumes:
+      - model_data:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus_data:/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   depends_on:
+  #     - api
+  #   restart: unless-stopped
+
+  # grafana:
+  #   image: grafana/grafana
+  #   container_name: grafana
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #   ports:
+  #     - "3001:3000"
+  #   depends_on:
+  #     - prometheus
+  #   restart: unless-stopped
+
+volumes:
+  model_data:
+    driver: local
+  # prometheus_data:
+  #   driver: local
+  # grafana_data:
+  #   driver: local
+
+networks:
+  default:
+    name: creditrisk-network
+    driver: bridge
