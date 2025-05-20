@@ -103,7 +103,7 @@ jobs:
           tar czvf artifacts/${{ env.BINARY_NAME }}-v${{ steps.version.outputs.version }}.tar.gz -C artifacts ${{ env.BINARY_NAME }}
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.BINARY_NAME }}-${{ steps.version.outputs.version }}
           path: artifacts/${{ env.BINARY_NAME }}-v${{ steps.version.outputs.version }}.tar.gz
@@ -184,3 +184,20 @@ jobs:
             docker compose pull
             docker compose down
             docker compose up -d --remove-orphans
+      
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            # Verificar se o container está rodando
+            sleep 10
+            if ! docker ps | grep creditrisk-api; then
+              echo "Container failed to start"
+              exit 1
+            fi
+            
+            # Verificar endpoint de saúde
+            curl -f http://localhost:3000/health || exit 1
