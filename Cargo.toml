@@ -19,7 +19,7 @@ approx = "=0.5.1"
 chrono = { version = "0.4", features = ["serde"] }
 
 [[bin]]
-name = "rust-project"
+name = "creditrisk-api-rs"
 path = "main.rs"
 
 [lib]
