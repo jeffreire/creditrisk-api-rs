@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct LogisticRegression {
     pub weights: Vec<f64>,
+    pub bias: f64,
     pub learning_rate: f64,
     #[serde(default)]
     pub initialized: bool,
@@ -13,6 +14,7 @@ impl LogisticRegression {
         let weights = vec![0.0; num_features];
         LogisticRegression {
             weights,
+            bias: 0.0,  // Inicializado com zero
             learning_rate,
             initialized: false,
         }
@@ -23,9 +25,14 @@ impl LogisticRegression {
             for (features, &target) in x.iter().zip(y.iter()) {
                 let prediction = self.sigmoid(self.weighted_sum(features));
                 let error = prediction - target;
+                
+                // Atualiza os pesos
                 for (weight, &feature) in self.weights.iter_mut().zip(features.iter()) {
                     *weight -= self.learning_rate * error * feature;
                 }
+                
+                // Atualiza o bias
+                self.bias -= self.learning_rate * error;
             }
         }
         self.initialized = true;
@@ -43,15 +50,16 @@ impl LogisticRegression {
         }
     }
 
-    fn weighted_sum(&self, features: &[f64]) -> f64 {
+    pub fn weighted_sum(&self, features: &[f64]) -> f64 {
         self.weights
             .iter()
             .zip(features)
             .map(|(w, xi)| w * xi)
-            .sum()
+            .sum::<f64>()
+            + self.bias  // Adicionando o bias ao somatório ponderado
     }
 
-    fn sigmoid(&self, z: f64) -> f64 {
+    pub fn sigmoid(&self, z: f64) -> f64 {
         1.0 / (1.0 + (-z).exp())
     }
 }

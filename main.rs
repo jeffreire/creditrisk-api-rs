@@ -1,7 +1,6 @@
-mod models;
-mod routes;
+use creditrisk_api_rs::routes;
+use creditrisk_api_rs::models::logistic_regression::LogisticRegression;
 
-use crate::models::logistic_regression::LogisticRegression;
 use axum::{Router, body::Body};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::Mutex;

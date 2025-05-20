@@ -57,9 +57,7 @@ jobs:
             --workspace \
             --packages creditrisk-api-rs \
             --out Xml \
-            --output-dir ./coverage \
-            --ignore-tests \
-            --ignore-panics
+            --output-dir ./coverage
           
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

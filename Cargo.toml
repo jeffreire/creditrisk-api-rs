@@ -7,7 +7,6 @@ edition = "2024"
 rocket = { version = "0.5.0-rc.3", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-polars = { version = "0.47.1", default-features = false, features = ["lazy", "json", "ndarray", "dtype-categorical"] }
 ndarray = "0.15"
 axum = "0.8.4"
 tokio = { version = "1", features = ["full"] }
@@ -16,10 +15,15 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 tower-http = { version = "0.5", features = ["trace"] }
 thiserror = "2.0.12"
+approx = "=0.5.1"
 
 [[bin]]
 name = "rust-project"
 path = "main.rs"
+
+[lib]
+name = "creditrisk_api_rs"
+path = "src/lib.rs"
 
 [alias]
 check-fmt = "fmt --all -- --check"
