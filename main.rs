@@ -1,5 +1,5 @@
-use creditrisk_api_rs::routes;
 use creditrisk_api_rs::models::logistic_regression::LogisticRegression;
+use creditrisk_api_rs::routes;
 
 use axum::{Router, body::Body};
 use std::{net::SocketAddr, sync::Arc};

@@ -14,7 +14,7 @@ impl LogisticRegression {
         let weights = vec![0.0; num_features];
         LogisticRegression {
             weights,
-            bias: 0.0,  // Inicializado com zero
+            bias: 0.0, // Inicializado com zero
             learning_rate,
             initialized: false,
         }
@@ -25,12 +25,12 @@ impl LogisticRegression {
             for (features, &target) in x.iter().zip(y.iter()) {
                 let prediction = self.sigmoid(self.weighted_sum(features));
                 let error = prediction - target;
-                
+
                 // Atualiza os pesos
                 for (weight, &feature) in self.weights.iter_mut().zip(features.iter()) {
                     *weight -= self.learning_rate * error * feature;
                 }
-                
+
                 // Atualiza o bias
                 self.bias -= self.learning_rate * error;
             }
@@ -56,7 +56,7 @@ impl LogisticRegression {
             .zip(features)
             .map(|(w, xi)| w * xi)
             .sum::<f64>()
-            + self.bias  // Adicionando o bias ao somatório ponderado
+            + self.bias // Adicionando o bias ao somatório ponderado
     }
 
     pub fn sigmoid(&self, z: f64) -> f64 {
