@@ -166,6 +166,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
