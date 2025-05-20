@@ -1,10 +1,10 @@
 use crate::models::logistic_regression::LogisticRegression;
 use axum::{
-    Json, Router,
     extract::State,
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::post,
+    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

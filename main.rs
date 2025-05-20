@@ -1,7 +1,7 @@
 use creditrisk_api_rs::models::logistic_regression::LogisticRegression;
 use creditrisk_api_rs::routes;
 
-use axum::{Router, body::Body};
+use axum::{body::Body, Router};
 use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;

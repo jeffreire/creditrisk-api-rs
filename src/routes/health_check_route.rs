@@ -1,4 +1,4 @@
-use axum::{Json, Router, response::IntoResponse, routing::get};
+use axum::{response::IntoResponse, routing::get, Json, Router};
 use serde::Serialize;
 
 pub async fn health_check() -> impl IntoResponse {
