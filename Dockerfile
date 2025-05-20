@@ -40,7 +40,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copiar binário compilado - usando uma expressão mais ampla para capturar o binário correto
-COPY --from=builder /usr/src/app/creditrisk-api-rs/target/release/rust-project ./creditrisk-api-rs
+COPY --from=builder /usr/src/app/creditrisk-api-rs/target/release/creditrisk-api-rs ./creditrisk-api-rs
 
 # Criar diretório para modelos
 RUN mkdir -p /app/models

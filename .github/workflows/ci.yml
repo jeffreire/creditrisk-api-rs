@@ -102,9 +102,9 @@ jobs:
           # Listar os binários disponíveis para debug
           ls -la target/release/
           # Copiar o binário com o nome correto
-          cp target/release/rust-project artifacts/${{ env.BINARY_NAME }}
+          cp target/release/creditrisk-api-rs artifacts/${{ env.BINARY_NAME }}
           tar czvf artifacts/${{ env.BINARY_NAME }}-v${{ steps.version.outputs.version }}.tar.gz -C artifacts ${{ env.BINARY_NAME }}
-          
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
