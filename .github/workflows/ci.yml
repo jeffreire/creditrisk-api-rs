@@ -173,11 +173,13 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Instalar o Docker (para sistemas baseados em Ubuntu)
-            sudo apt-get update
-            sudo apt-get install -y docker.io
+            # Instalar o Docker no Oracle Linux
+            sudo yum -y install yum-utils
+            sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+            sudo yum -y install docker-ce docker-ce-cli containerd.io
             sudo systemctl start docker
             sudo systemctl enable docker
+
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Copy docker-compose.yml to server
